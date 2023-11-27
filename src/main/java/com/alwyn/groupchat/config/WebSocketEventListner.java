@@ -19,15 +19,23 @@ public class WebSocketEventListner {
 
         private  final SimpMessageSendingOperations messageSendingOperations;
 
+        /**
+         * Event listener method to handle WebSocket disconnect events.
+         *
+         * @param event SessionDisconnectEvent representing a WebSocket session disconnect.
+         */
         @EventListener
         public void handleWebSocketDisconnectListner(SessionDisconnectEvent event){
+                // Extract StompHeaderAccessor from the event message.
                 StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
                 String username = (String) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("username");
                 if (username != null){
+                        // Create a ChatMessageDTO representing a user leaving the chat.
                         var chatMessageDTO = ChatMessageDTO.builder()
                                 .type(MessageType.LEAVE)
                                 .Sender(username)
                                 .build();
+                        // Send the leave message to the "/topic/public" destination.
                         messageSendingOperations.convertAndSend("/topic/public",chatMessageDTO);
                 }
         }
